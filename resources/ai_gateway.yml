@@ -1,0 +1,21 @@
+# AI Gateway configuration for claim extraction
+#
+# This file documents the AI Gateway setup. Note: AI Gateway routes are typically
+# managed via Databricks UI or Terraform, not directly via DAB YAML at present.
+#
+# Manual setup steps:
+# 1. In Databricks workspace, go to AI Gateway (Admin > Governance > AI Gateway)
+# 2. Create a new route with:
+#    - Route name: trust-claim-extractor
+#    - Model: Any Databricks-provided foundation model (e.g., llama-3-70b-instruct)
+#    - Rate limits: per your requirements
+#    - Usage tags: team=trust, stage=silver
+# 3. Note the route name and pass it to the DLT pipeline via ai_gateway_route variable
+
+ai_gateway:
+  route_name: "trust-claim-extractor"
+  model: "databricks-meta-llama-3-70b-instruct-v2"
+  rate_limit: "100 requests per minute"
+  usage_tags:
+    team: "trust"
+    stage: "silver"

@@ -1,0 +1,50 @@
+[
+  {
+    "article_id": "article-001",
+    "source_type": "newsapi",
+    "outlet": "CNN",
+    "url": "https://cnn.com/story/nvidia-ceo",
+    "published_at": "2026-11-14T10:00:00Z",
+    "scraped_at": "2026-11-14T10:05:00Z",
+    "title": "Nvidia CEO Steps Down Amid Allegations",
+    "raw_text": "In a surprising move today, the CEO of Nvidia announced their resignation following allegations of misconduct dating back three years. The board of directors confirmed the decision was effective immediately. The company plans to name an interim CEO by end of week.",
+    "author": "Tech Reporter A",
+    "language": "en",
+    "apify_run_id": null,
+    "source_query": "nvidia ceo",
+    "ingest_job_run_id": "stub-job-001",
+    "raw_metadata": {}
+  },
+  {
+    "article_id": "article-002",
+    "source_type": "newsapi",
+    "outlet": "Fox News",
+    "url": "https://foxnews.com/nvidia-leadership",
+    "published_at": "2026-11-14T10:15:00Z",
+    "scraped_at": "2026-11-14T10:20:00Z",
+    "title": "Nvidia Leadership Changes",
+    "raw_text": "Nvidia's board announced a strategic leadership transition today. The current executive will be stepping aside to focus on personal matters. Industry analysts speculate this is related to ongoing investigations into workplace culture.",
+    "author": "Tech Reporter B",
+    "language": "en",
+    "apify_run_id": null,
+    "source_query": "nvidia ceo",
+    "ingest_job_run_id": "stub-job-001",
+    "raw_metadata": {}
+  },
+  {
+    "article_id": "article-003",
+    "source_type": "newsapi",
+    "outlet": "ABC News",
+    "url": "https://abcnews.com/nvidia-ceo",
+    "published_at": "2026-11-14T09:45:00Z",
+    "scraped_at": "2026-11-14T09:50:00Z",
+    "title": "Nvidia CEO Denies Allegations, Announces Departure",
+    "raw_text": "The CEO of Nvidia released a statement today denying all allegations but announced plans to step down voluntarily. The executive claims the allegations are politically motivated. However, company insiders suggest there have been ongoing tensions within the C-suite.",
+    "author": "Tech Reporter C",
+    "language": "en",
+    "apify_run_id": null,
+    "source_query": "nvidia ceo",
+    "ingest_job_run_id": "stub-job-001",
+    "raw_metadata": {}
+  }
+]

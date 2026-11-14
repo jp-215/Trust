@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    trust_pipeline:
+      name: "trust-dlt-pipeline"
+      target: "${var.catalog}.${var.schema}"
+      development: true
+      libraries:
+        - notebook:
+            path: "src/trust/pipelines/bronze"
+        - notebook:
+            path: "src/trust/pipelines/silver"
+        - notebook:
+            path: "src/trust/pipelines/gold"
+      configuration:
+        ai_gateway_route: "${var.ai_gateway_route}"

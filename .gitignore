@@ -1,0 +1,31 @@
+# Environment
+.env
+.env.local
+*.pyc
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+
+# Databricks
+.databricks-config
+*.dbc
+
+# Data
+*.parquet
+*.delta
+spark-warehouse/
+
+# OS
+.DS_Store

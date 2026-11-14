@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trust"
+version = "0.1.0"
+description = "Fact-checker: aggregates news coverage to find source of truth"
+requires-python = ">=3.10"
+
+dependencies = [
+    "pyspark>=3.4.0",
+    "apify-client>=1.0.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I001"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]

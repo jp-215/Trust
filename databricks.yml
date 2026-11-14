@@ -1,0 +1,42 @@
+bundle:
+  name: trust
+  description: "Trust - Fact-checker ingestion and comparison engine"
+
+variables:
+  catalog:
+    description: "Databricks catalog name"
+    default: "main"
+  schema:
+    description: "Schema name for bronze/silver/gold"
+    default: "trust_dev"
+  ai_gateway_route:
+    description: "AI Gateway route name for claim extraction"
+    default: "trust-claim-extractor"
+
+targets:
+  dev:
+    workspace:
+      host: "${var.DATABRICKS_HOST}"
+      token: "${var.DATABRICKS_TOKEN}"
+    resources:
+      pipelines:
+        trust_pipeline:
+          name: "trust-dlt-pipeline"
+          target: "${var.catalog}.${var.schema}"
+          libraries:
+            - path: "src"
+              package_type: "whl"
+          development: true
+
+  prod:
+    workspace:
+      host: "${var.DATABRICKS_HOST}"
+      token: "${var.DATABRICKS_TOKEN}"
+    resources:
+      pipelines:
+        trust_pipeline:
+          name: "trust-dlt-pipeline-prod"
+          target: "${var.catalog}.${var.schema}_prod"
+          libraries:
+            - path: "src"
+              package_type: "whl"

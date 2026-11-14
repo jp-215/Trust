@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trust-agent"
+version = "0.1.0"
+description = "Gemini-based agent for synthesizing truth from aggregated news coverage"
+requires-python = ">=3.10"
+
+dependencies = [
+    "google-genai>=0.1.0",
+    "databricks-sql-connector>=0.2.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I001"]

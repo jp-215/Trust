@@ -1,0 +1,28 @@
+resources:
+  jobs:
+    ingestion_job:
+      name: "trust-ingestion-workflow"
+      tasks:
+        - task_key: "ingest"
+          python_wheel_task:
+            package: "src"
+            entry_point: "trust.jobs.run_ingestion:main"
+          job_cluster_key: "default"
+          timeout_seconds: 3600
+        - task_key: "dlt_pipeline"
+          pipeline_task:
+            pipeline_id: "${resources.pipelines.trust_pipeline.id}"
+          depends_on:
+            - task_key: "ingest"
+          job_cluster_key: "default"
+      job_clusters:
+        - job_cluster_key: "default"
+          new_cluster:
+            spark_version: "14.3.x-scala2.12"
+            node_type_id: "i3.xlarge"
+            num_workers: 2
+            aws_attributes:
+              availability: "SPOT_WITH_FALLBACK"
+      schedule:
+        quartz_cron_expression: "0 0 * * * ?"
+        timezone_id: "UTC"
