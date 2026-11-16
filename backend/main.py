@@ -87,6 +87,8 @@ class StoryResponse(BaseModel):
     outlets_covering: List[str]
     num_articles: int
     claim_matrix: List[dict]
+    contradiction_pairs: List[dict] = []
+    created_at: Optional[str] = None
     synthesized_truth: Optional[str]
     confidence: Optional[float]
 
@@ -122,12 +124,12 @@ def to_serializable(value):
 
 
 # Helper: Query Unity Catalog
-def query_gold_table(query: str) -> List[dict]:
-    """Execute query against Unity Catalog"""
+def query_gold_table(query: str, params: Optional[dict] = None) -> List[dict]:
+    """Execute (optionally parameterized) query against Unity Catalog"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(query)
+                cur.execute(query, params)
                 columns = [desc[0] for desc in cur.description]
                 rows = cur.fetchall()
                 return [
@@ -154,7 +156,9 @@ async def get_story(story_id: str):
       story_title,
       outlets_covering,
       size(source_article_ids) as num_articles,
-      claim_matrix
+      claim_matrix,
+      contradiction_pairs,
+      created_at
     FROM workspace.trust_dev.story_records
     WHERE story_id = '{story_id}'
     LIMIT 1
@@ -189,6 +193,8 @@ async def get_story(story_id: str):
         outlets_covering=story["outlets_covering"],
         num_articles=story["num_articles"],
         claim_matrix=story["claim_matrix"],
+        contradiction_pairs=story.get("contradiction_pairs") or [],
+        created_at=str(story["created_at"]) if story.get("created_at") else None,
         synthesized_truth=synthesis["synthesized_truth"] if synthesis else None,
         confidence=0.87,  # TODO: Extract from metadata
     )
@@ -310,11 +316,11 @@ async def search(query: str, limit: int = 10):
     search_query = f"""
     SELECT DISTINCT story_id, outlets_covering
     FROM workspace.trust_dev.story_records
-    WHERE story_title LIKE '%{query}%'
-    LIMIT {limit}
+    WHERE lower(story_title) LIKE lower(:pattern) OR lower(story_id) LIKE lower(:pattern)
+    LIMIT {int(limit)}
     """
 
-    return query_gold_table(search_query)
+    return query_gold_table(search_query, {"pattern": f"%{query}%"})
 
 # Root
 @app.get("/")
