@@ -12,6 +12,7 @@ __pycache__/
 
 # Python
 venv/
+.venv/
 *.egg-info/
 dist/
 build/
@@ -26,6 +27,10 @@ build/
 *.parquet
 *.delta
 spark-warehouse/
+
+# Node / Next.js
+node_modules/
+.next/
 
 # OS
 .DS_Store
