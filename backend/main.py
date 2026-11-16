@@ -46,7 +46,9 @@ gemini_client = (
     genai_client.Client(
         api_key=GEMINI_API_KEY,
         http_options=genai_types.HttpOptions(
-            timeout=60_000,  # 60s per request, don't hang for minutes
+            # 20s per model: with 4 fallback models the whole chain stays
+            # under ~80s, inside the frontend's 120s request budget.
+            timeout=20_000,
         ),
     )
     if GEMINI_API_KEY
@@ -54,11 +56,13 @@ gemini_client = (
 )
 
 # Models to try in order — first is preferred, rest are fallbacks for 503/overload
+# lite second: it is rarely congested, so one failed primary attempt
+# falls through to a model that almost always answers quickly
 GEMINI_MODELS = [
     "gemini-3.8-flash",
+    "gemini-3.5-flash-lite",
     "gemini-3.7-flash",
     "gemini-3.6-flash",
-    "gemini-3.5-flash-lite",
 ]
 
 
@@ -147,7 +151,7 @@ async def health():
     return {"status": "ok", "service": "Trust Backend"}
 
 @app.post("/story/{story_id}", response_model=StoryResponse)
-async def get_story(story_id: str):
+def get_story(story_id: str):
     """Get story from gold table"""
 
     query = f"""
@@ -200,7 +204,7 @@ async def get_story(story_id: str):
     )
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+def chat(request: ChatRequest):
     """Chat interface - powered by Gemini agent"""
 
     if gemini_client is None:
@@ -303,7 +307,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=f"Chat error: {msg}")
 
 @app.get("/story/{story_id}/claims")
-async def get_story_claims(story_id: str):
+def get_story_claims(story_id: str):
     """Per-claim provenance from the claims table: source articles,
     outlets, entities, and extraction metadata for one story."""
 
@@ -329,7 +333,7 @@ async def get_story_claims(story_id: str):
 
 
 @app.get("/stories")
-async def list_stories(limit: int = 10):
+def list_stories(limit: int = 10):
     """List all stories in gold table"""
 
     query = f"""
@@ -346,7 +350,7 @@ async def list_stories(limit: int = 10):
     return query_gold_table(query)
 
 @app.get("/outlets")
-async def get_outlets():
+def get_outlets():
     """Get unique outlets in database"""
 
     query = """
@@ -359,7 +363,7 @@ async def get_outlets():
     return [r["outlet"] for r in results]
 
 @app.post("/search")
-async def search(query: str, limit: int = 10):
+def search(query: str, limit: int = 10):
     """Search stories by keyword"""
 
     search_query = f"""
