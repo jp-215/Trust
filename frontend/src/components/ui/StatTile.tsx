@@ -1,23 +1,30 @@
 import React from 'react';
+import { cn } from '@/lib/format';
 
 interface StatTileProps {
   label: string;
   value: string | number;
-  icon?: string;
+  accent?: boolean;
 }
 
 export const StatTile = React.memo(function StatTile({
   label,
   value,
-  icon,
+  accent,
 }: StatTileProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <p className="text-xs uppercase tracking-wide text-gray-500">
-        {icon && <span aria-hidden="true">{icon} </span>}
+    <div className="bg-white border border-line rounded-xl px-5 py-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
         {label}
       </p>
-      <p className="text-2xl font-bold mt-1">{value}</p>
+      <p
+        className={cn(
+          'font-display text-3xl font-bold mt-1',
+          accent && 'text-warn'
+        )}
+      >
+        {value}
+      </p>
     </div>
   );
 });

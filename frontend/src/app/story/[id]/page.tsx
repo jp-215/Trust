@@ -8,7 +8,7 @@ import { StoryCard } from '@/components/story/StoryCard';
 import { FactMatrix } from '@/components/story/FactMatrix';
 import { ContradictionList } from '@/components/story/ContradictionList';
 import { SourceClaims } from '@/components/story/SourceClaims';
-import { ChatPanel } from '@/components/chat/ChatPanel';
+import { AssistantWidget } from '@/components/chat/AssistantWidget';
 import { Spinner } from '@/components/ui/Spinner';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
 import { errorDetail } from '@/services/api';
@@ -26,10 +26,13 @@ export default function StoryPage() {
   }, [story]);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
+    <main className="max-w-5xl mx-auto px-6 py-8">
       <nav className="mb-6 text-sm" aria-label="Breadcrumb">
-        <Link href="/" className="text-blue-600 hover:text-blue-800">
-          ← Back to dashboard
+        <Link
+          href="/"
+          className="font-semibold text-accent-deep hover:underline"
+        >
+          ← Back to trending
         </Link>
       </nav>
 
@@ -50,31 +53,29 @@ export default function StoryPage() {
       )}
 
       {story && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <StoryCard
-              storyId={story.story_id}
-              title={story.story_title}
-              outletsCovering={story.outlets_covering}
-              numArticles={story.num_articles}
-              synthesizedTruth={
-                story.synthesized_truth ?? 'No synthesis available yet.'
-              }
-              confidence={story.confidence ?? undefined}
-              createdAt={story.created_at}
-            />
-            <FactMatrix
-              claims={story.claim_matrix ?? []}
-              outlets={story.outlets_covering}
-            />
-            <ContradictionList pairs={story.contradiction_pairs ?? []} />
-            <SourceClaims storyId={story.story_id} />
-          </div>
-          <div className="lg:col-span-1 h-[600px] lg:sticky lg:top-6">
-            <ChatPanel storyId={story.story_id} />
-          </div>
-        </div>
+        <>
+          <StoryCard
+            storyId={story.story_id}
+            title={story.story_title}
+            outletsCovering={story.outlets_covering}
+            numArticles={story.num_articles}
+            synthesizedTruth={
+              story.synthesized_truth ?? 'No synthesis available yet.'
+            }
+            confidence={story.confidence ?? undefined}
+            createdAt={story.created_at}
+            hasContradictions={(story.contradiction_pairs?.length ?? 0) > 0}
+          />
+          <FactMatrix
+            claims={story.claim_matrix ?? []}
+            outlets={story.outlets_covering}
+          />
+          <ContradictionList pairs={story.contradiction_pairs ?? []} />
+          <SourceClaims storyId={story.story_id} />
+        </>
       )}
+
+      <AssistantWidget storyId={story?.story_id ?? null} />
     </main>
   );
 }

@@ -6,6 +6,8 @@ import { useOutlets } from '@/hooks/useOutlets';
 import { useSearch } from '@/hooks/useSearch';
 import { SearchBar } from '@/components/search/SearchBar';
 import { StoryListCard } from '@/components/story/StoryListCard';
+import { TrendingBand } from '@/components/story/TrendingBand';
+import { AssistantWidget } from '@/components/chat/AssistantWidget';
 import { StatTile } from '@/components/ui/StatTile';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
@@ -21,26 +23,28 @@ export default function DashboardPage() {
   const [outletFilter, setOutletFilter] = useState<string | null>(null);
   const { results: searchResults, searching } = useSearch(query);
 
-  // Aggregate stats derived from the Databricks gold/raw tables.
+  // Newest first — drives both the trending band and the grid order.
+  const sortedStories = useMemo(() => {
+    const list = [...(stories ?? [])];
+    list.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''));
+    return list;
+  }, [stories]);
+
   const stats = useMemo(() => {
-    const list = stories ?? [];
-    const totalArticles = list.reduce((sum, s) => sum + (s.num_articles ?? 0), 0);
-    const latest = list.reduce<string | null>((acc, s) => {
-      if (!s.created_at) return acc;
-      return !acc || s.created_at > acc ? s.created_at : acc;
-    }, null);
+    const totalArticles = sortedStories.reduce(
+      (sum, s) => sum + (s.num_articles ?? 0),
+      0
+    );
     return {
-      totalStories: list.length,
+      totalStories: sortedStories.length,
       totalArticles,
       totalOutlets: outlets?.length ?? 0,
-      latestIngest: latest,
+      latestIngest: sortedStories[0]?.created_at ?? null,
     };
-  }, [stories, outlets]);
+  }, [sortedStories, outlets]);
 
-  // Search results ∩ outlet filter, memoized so the grid only
-  // re-renders when its inputs actually change.
   const visibleStories = useMemo(() => {
-    let list = stories ?? [];
+    let list = sortedStories;
     if (searchResults !== null) {
       const ids = new Set(searchResults.map((r) => r.story_id));
       list = list.filter((s) => ids.has(s.story_id));
@@ -49,14 +53,16 @@ export default function DashboardPage() {
       list = list.filter((s) => s.outlets_covering?.includes(outletFilter));
     }
     return list;
-  }, [stories, searchResults, outletFilter]);
+  }, [sortedStories, searchResults, outletFilter]);
 
   const toggleOutlet = useCallback((outlet: string) => {
     setOutletFilter((current) => (current === outlet ? null : outlet));
   }, []);
 
+  const filtering = query.trim().length >= 2 || !!outletFilter;
+
   return (
-    <main className="max-w-7xl mx-auto px-4 py-8">
+    <main className="max-w-7xl mx-auto px-6 py-8">
       {error ? (
         <ErrorBanner>
           {errorDetail(error, 'Failed to load stories.')}{' '}
@@ -66,27 +72,27 @@ export default function DashboardPage() {
         </ErrorBanner>
       ) : null}
 
+      {!filtering && (
+        <TrendingBand stories={sortedStories} latestIngest={stats.latestIngest} />
+      )}
+
       {/* Databricks aggregate stats */}
       <section
         aria-label="Pipeline statistics"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-9"
       >
-        <StatTile icon="📚" label="Stories" value={stats.totalStories} />
-        <StatTile icon="📄" label="Articles" value={stats.totalArticles} />
-        <StatTile icon="📰" label="Outlets" value={stats.totalOutlets} />
-        <StatTile
-          icon="⏱"
-          label="Latest ingest"
-          value={formatDate(stats.latestIngest)}
-        />
+        <StatTile label="Stories" value={stats.totalStories} />
+        <StatTile label="Articles" value={stats.totalArticles} />
+        <StatTile label="Outlets" value={stats.totalOutlets} />
+        <StatTile label="Latest ingest" value={formatDate(stats.latestIngest)} />
       </section>
 
       {/* Search + outlet filter */}
-      <section aria-label="Filters" className="mb-6 space-y-3">
+      <section aria-label="Filters" className="mb-6 space-y-3" id="stories">
         <SearchBar value={query} onChange={setQuery} searching={searching} />
         {!!outlets?.length && (
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-gray-500">Filter by outlet:</span>
+          <div className="flex flex-wrap gap-2 items-center" id="outlets">
+            <span className="text-sm text-ink-muted">Filter by outlet:</span>
             {outlets.map((outlet) => (
               <button
                 key={outlet}
@@ -94,7 +100,7 @@ export default function DashboardPage() {
                 onClick={() => toggleOutlet(outlet)}
                 aria-pressed={outletFilter === outlet}
               >
-                <Badge tone={outletFilter === outlet ? 'blue' : 'gray'}>
+                <Badge tone={outletFilter === outlet ? 'accent' : 'gray'}>
                   {outlet}
                 </Badge>
               </button>
@@ -104,14 +110,17 @@ export default function DashboardPage() {
       </section>
 
       {/* Story grid */}
-      <section aria-label="Stories">
+      <section aria-label="Latest stories">
+        <h2 className="font-display text-xl font-bold tracking-tight mb-4">
+          Latest stories
+        </h2>
         {loading && !stories ? (
           <Spinner label="Querying Databricks gold table…" />
         ) : visibleStories.length === 0 ? (
           <EmptyState
             title="No stories match."
             hint={
-              query || outletFilter
+              filtering
                 ? 'Try clearing the search or outlet filter.'
                 : 'Run the ingestion pipeline to populate story_records.'
             }
@@ -124,6 +133,8 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
+
+      <AssistantWidget />
     </main>
   );
 }
