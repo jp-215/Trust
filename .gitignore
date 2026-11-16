@@ -1,6 +1,13 @@
-# Environment
+# Environment — never commit env files or credentials
 .env
-.env.local
+.env.*
+*.env
+!.env.example
+.envrc
+*.pem
+*.key
+credentials.json
+secrets.json
 *.pyc
 __pycache__/
 
