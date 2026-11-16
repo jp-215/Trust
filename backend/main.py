@@ -229,7 +229,27 @@ async def chat(request: ChatRequest):
 
         story_data = results[0]
 
-        # Step 2: Build context for Gemini
+        # Step 2: Per-claim provenance from the claims table (best effort)
+        provenance = ""
+        try:
+            claim_rows = query_gold_table(
+                """
+                SELECT outlet, claim_text, article_title, article_url
+                FROM workspace.trust_dev.claims
+                WHERE story_cluster_id = :story_id
+                ORDER BY outlet
+                """,
+                {"story_id": request.story_id},
+            )
+            provenance = "\n".join(
+                f"- [{c['outlet']}] \"{c['claim_text']}\" "
+                f"(article: {c.get('article_title') or 'untitled'}, {c.get('article_url') or 'no url'})"
+                for c in claim_rows
+            )
+        except Exception as e:
+            logger.warning(f"claims provenance unavailable for chat context: {e}")
+
+        # Step 3: Build context for Gemini
         context = f"""
         Story: {request.story_id}
         Outlets: {', '.join(story_data['outlets_covering'])}
@@ -239,6 +259,9 @@ async def chat(request: ChatRequest):
 
         Contradictions:
         {story_data['contradiction_pairs']}
+
+        Source claims (outlet, claim, source article):
+        {provenance or '(none recorded)'}
         """
 
         # Step 3: Call Gemini agent
@@ -278,6 +301,32 @@ async def chat(request: ChatRequest):
                 detail="Gemini is overloaded right now — please try again in a minute.",
             )
         raise HTTPException(status_code=500, detail=f"Chat error: {msg}")
+
+@app.get("/story/{story_id}/claims")
+async def get_story_claims(story_id: str):
+    """Per-claim provenance from the claims table: source articles,
+    outlets, entities, and extraction metadata for one story."""
+
+    query = """
+    SELECT
+      claim_id,
+      outlet,
+      claim_text,
+      article_id,
+      article_title,
+      article_url,
+      claim_type,
+      entities,
+      extraction_model,
+      extracted_at,
+      confidence
+    FROM workspace.trust_dev.claims
+    WHERE story_cluster_id = :story_id
+    ORDER BY outlet, extracted_at
+    """
+
+    return query_gold_table(query, {"story_id": story_id})
+
 
 @app.get("/stories")
 async def list_stories(limit: int = 10):

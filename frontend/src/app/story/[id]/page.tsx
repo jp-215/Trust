@@ -7,6 +7,7 @@ import { useStory } from '@/hooks/useStory';
 import { StoryCard } from '@/components/story/StoryCard';
 import { FactMatrix } from '@/components/story/FactMatrix';
 import { ContradictionList } from '@/components/story/ContradictionList';
+import { SourceClaims } from '@/components/story/SourceClaims';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { Spinner } from '@/components/ui/Spinner';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
@@ -67,6 +68,7 @@ export default function StoryPage() {
               outlets={story.outlets_covering}
             />
             <ContradictionList pairs={story.contradiction_pairs ?? []} />
+            <SourceClaims storyId={story.story_id} />
           </div>
           <div className="lg:col-span-1 h-[600px] lg:sticky lg:top-6">
             <ChatPanel storyId={story.story_id} />

@@ -1,5 +1,10 @@
 import { api } from './api';
-import type { SearchResult, StoryDetail, StoryListItem } from '@/types';
+import type {
+  SearchResult,
+  SourceClaim,
+  StoryDetail,
+  StoryListItem,
+} from '@/types';
 
 export async function getStories(limit = 50): Promise<StoryListItem[]> {
   const res = await api.get<StoryListItem[]>('/stories', { params: { limit } });
@@ -11,6 +16,13 @@ export async function getStory(storyId: string): Promise<StoryDetail> {
     `/story/${encodeURIComponent(storyId)}`
   );
   return res.data;
+}
+
+export async function getStoryClaims(storyId: string): Promise<SourceClaim[]> {
+  const res = await api.get<SourceClaim[]>(
+    `/story/${encodeURIComponent(storyId)}/claims`
+  );
+  return res.data ?? [];
 }
 
 export async function getOutlets(): Promise<string[]> {

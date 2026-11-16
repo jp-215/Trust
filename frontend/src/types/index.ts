@@ -44,6 +44,26 @@ export interface StoryDetail {
   confidence: number | null;
 }
 
+export interface ClaimEntity {
+  name: string;
+  type: string;
+}
+
+/** Row from workspace.trust_dev.claims — per-claim provenance. */
+export interface SourceClaim {
+  claim_id: string;
+  outlet: string;
+  claim_text: string;
+  article_id?: string;
+  article_title?: string | null;
+  article_url?: string | null;
+  claim_type?: string | null;
+  entities?: ClaimEntity[];
+  extraction_model?: string | null;
+  extracted_at?: string | null;
+  confidence?: number | null;
+}
+
 export interface SearchResult {
   story_id: string;
   outlets_covering: string[];
