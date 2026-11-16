@@ -1,14 +1,13 @@
 import React from 'react';
 import { cn } from '@/lib/format';
 
-type BadgeTone = 'blue' | 'green' | 'yellow' | 'red' | 'gray';
+type BadgeTone = 'accent' | 'warn' | 'gray' | 'danger';
 
 const tones: Record<BadgeTone, string> = {
-  blue: 'bg-blue-100 text-blue-900',
-  green: 'bg-green-100 text-green-900',
-  yellow: 'bg-yellow-100 text-yellow-900',
-  red: 'bg-red-100 text-red-900',
-  gray: 'bg-gray-100 text-gray-800',
+  accent: 'bg-accent-tint text-accent-deep',
+  warn: 'bg-warn-tint text-warn',
+  gray: 'bg-line-faint text-ink-soft',
+  danger: 'bg-red-50 text-danger',
 };
 
 interface BadgeProps {
@@ -25,7 +24,7 @@ export const Badge = React.memo(function Badge({
   return (
     <span
       className={cn(
-        'inline-block px-3 py-1 rounded-full text-sm font-medium',
+        'inline-block px-2.5 py-1 rounded-full text-xs font-semibold',
         tones[tone],
         className
       )}
