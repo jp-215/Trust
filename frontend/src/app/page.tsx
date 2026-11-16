@@ -40,7 +40,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchStories = () =>
     axios
       .get(`${API_BASE_URL}/stories`)
       .then((res) => {
@@ -52,6 +52,10 @@ export default function Home() {
           `Could not reach backend at ${API_BASE_URL}. Is it running? (uvicorn main:app --reload)`
         );
       });
+
+  useEffect(() => {
+    fetchStories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStory = async (storyId: string) => {
@@ -61,8 +65,18 @@ export default function Home() {
     try {
       const res = await axios.post(`${API_BASE_URL}/story/${storyId}`);
       setStory(res.data);
-    } catch {
-      setError(`Failed to load story "${storyId}".`);
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        // Story IDs change when the ingestion pipeline re-runs —
+        // this list was stale, so refresh it automatically.
+        setSelectedId(null);
+        await fetchStories();
+        setError(
+          'That story no longer exists (the pipeline re-ran and story IDs changed). Story list refreshed — pick one again.'
+        );
+      } else {
+        setError(`Failed to load story "${storyId}".`);
+      }
       setStory(null);
     } finally {
       setLoading(false);
